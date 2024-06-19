@@ -239,6 +239,8 @@ services:
   # The Mosquitto project also provides a C library for implementing MQTT clients, and the very popular mosquitto_pub and mosquitto_sub command line MQTT clients.
   mosquitto:
     image: eclipse-mosquitto:latest
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
     hostname: mosquitto
     container_name: mosquitto
     expose:
@@ -383,24 +385,24 @@ services:
       - sensor.place.id=${IOT_SENSOR_1_PLACE_ID}
 
   # IoT Sensor 2
-  iot_sensor_2:
-    image: ssanchez11/iot_sensor:0.0.1-SNAPSHOT
-    container_name: iot_sensor_2
-    restart: unless-stopped
-    environment:
-      - sensor.id=${IOT_SENSOR_2_ID}
-      - sensor.name=${IOT_SENSOR_2_NAME}
-      - sensor.place.id=${IOT_SENSOR_2_PLACE_ID}
+  # iot_sensor_2:
+  #   image: ssanchez11/iot_sensor:0.0.1-SNAPSHOT
+  #   container_name: iot_sensor_2
+  #   restart: unless-stopped
+  #   environment:
+  #     - sensor.id=${IOT_SENSOR_2_ID}
+  #     - sensor.name=${IOT_SENSOR_2_NAME}
+  #     - sensor.place.id=${IOT_SENSOR_2_PLACE_ID}
       
   # IoT Sensor 3
-  iot_sensor_3:
-    image: ssanchez11/iot_sensor:0.0.1-SNAPSHOT
-    container_name: iot_sensor_3
-    restart: unless-stopped
-    environment:
-      - sensor.id=${IOT_SENSOR_3_ID}
-      - sensor.name=${IOT_SENSOR_3_NAME}
-      - sensor.place.id=${IOT_SENSOR_3_PLACE_ID}
+  # iot_sensor_3:
+  #   image: ssanchez11/iot_sensor:0.0.1-SNAPSHOT
+  #   container_name: iot_sensor_3
+  #   restart: unless-stopped
+  #   environment:
+  #     - sensor.id=${IOT_SENSOR_3_ID}
+  #     - sensor.name=${IOT_SENSOR_3_NAME}
+  #     - sensor.place.id=${IOT_SENSOR_3_PLACE_ID}
 
   # IoT Processor
   iot-processor:
@@ -417,4 +419,5 @@ services:
     ports:
       - '9091:9091'
       
-      
+
+
