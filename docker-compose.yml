@@ -189,23 +189,23 @@ services:
 
   # # This is a web tool for Kafka Connect for setting up and managing connectors for multiple connect clusters.
   # # https://github.com/Landoop/kafka-connect-ui
-  # kafka-connect-ui:
-  #   image: landoop/kafka-connect-ui:latest
-  #   container_name: kafka-connect-ui
-  #   # kafka-connect-ui binds to port 8000, but we are going to expose it on our local
-  #   # machine on port 8002.
-  #   ports:
-  #     - "8082:8000"
-  #   environment:
-  #     # Required. Instructs the UI where it can find Kafka Connect.
-  #     CONNECT_URL: "http://kafka-connect:8083/"
-  #     # This instructs the docker image to use Caddy to proxy traffic to kafka-connect-ui.
-  #     PROXY: "true"
-  #   # kafka-connect-ui relies upon Kafka Connect.
-  #   # This will instruct docker to wait until those services are up
-  #   # before attempting to start kafka-connect-ui.
-  #   depends_on:
-  #     - kafka-connect
+  kafka-connect-ui:
+    image: landoop/kafka-connect-ui:latest
+    container_name: kafka-connect-ui
+    # kafka-connect-ui binds to port 8000, but we are going to expose it on our local
+    # machine on port 8002.
+    ports:
+      - "8082:8000"
+    environment:
+      # Required. Instructs the UI where it can find Kafka Connect.
+      CONNECT_URL: "http://kafka-connect:8083/"
+      # This instructs the docker image to use Caddy to proxy traffic to kafka-connect-ui.
+      PROXY: "true"
+    # kafka-connect-ui relies upon Kafka Connect.
+    # This will instruct docker to wait until those services are up
+    # before attempting to start kafka-connect-ui.
+    depends_on:
+      - kafka-connect
 
   # Web client for ZooNavigator, web-based browser & editor for ZooKeeper.
   # https://github.com/elkozmon/zoonavigator
@@ -274,13 +274,14 @@ services:
   # https://github.com/hanattaw/grafana-flowcharting
   # from link above, some fixed for plugin flowcharting. You need to manually install plugin.
   grafana:
-    image: grafana/grafana:latest-ubuntu
+    image: grafana/grafana:9.5.20-ubuntu
     container_name: grafana
     user: '0'
     volumes:
       - ./grafana/data:/var/lib/grafana
       - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
       - ./grafana/datasources:/etc/grafana/provisioning/datasources
+      # - ./grafana/data/plugins:/var/lib/grafana/plugins
     environment:
       - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
       - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
@@ -333,33 +334,40 @@ services:
   #     - '9100:9100'
 
   # # Kafka exporter for Prometheus
-  # kafka-exporter:
-  #   image: bitnami/kafka-exporter:latest
-  #   container_name: kafka-exporter
-  #   hostname: kafka-exporter
-  #   command:
-  #     - '--kafka.server=kafka:9092'
-  #     - '--web.listen-address=kafka-exporter:9308'
-  #     - '--web.telemetry-path=/metrics'
-  #     - '--log.level=debug'
-  #   restart: unless-stopped
+  kafka-exporter:
+    image: bitnami/kafka-exporter:latest
+    container_name: kafka-exporter
+    hostname: kafka-exporter
+    command:
+      - '--kafka.server=kafka:9092'
+      - '--web.listen-address=kafka-exporter:9308'
+      - '--web.telemetry-path=/metrics'
+      - '--log.level=debug'
+    restart: unless-stopped
 
  
   # # IoT Sensor 1
   iot_sensor_1:
-    image: ssanchez11/iot_sensor:0.0.1-SNAPSHOT
+    # image: ssanchez11/iot_sensor:0.0.1-SNAPSHOT
+    build:
+      context: ./microservices/iot_sensor
+      args:
+        - MQTT_SERVER=${MQTT_SERVER}
     container_name: iot_sensor_1
     restart: unless-stopped
     environment:
       - sensor.id=${IOT_SENSOR_1_ID}
       - sensor.name=${IOT_SENSOR_1_NAME}
       - sensor.place.id=${IOT_SENSOR_1_PLACE_ID}
-    depends_on:
-      iot-processor:
-        condition: service_started
-        restart: true
+      - sensor.mqtt.username=${IOT_SENSOR_1_USERNAME}
+      - sensor.mqtt.password=${IOT_SENSOR_1_PASSWORD}
+      - MQTT_SERVER=${MQTT_SERVER}
+    # depends_on:
+    #   iot-processor:
+    #     condition: service_started
+    #     restart: true
 
-  # # # # IoT Sensor 2
+  # # IoT Sensor 2
   # iot_sensor_2:
   #   image: ssanchez11/iot_sensor:0.0.1-SNAPSHOT
   #   container_name: iot_sensor_2
@@ -368,6 +376,7 @@ services:
   #     - sensor.id=${IOT_SENSOR_2_ID}
   #     - sensor.name=${IOT_SENSOR_2_NAME}
   #     - sensor.place.id=${IOT_SENSOR_2_PLACE_ID}
+  
   # # # # IoT Sensor 1
 
   # iot_sensor_3:
